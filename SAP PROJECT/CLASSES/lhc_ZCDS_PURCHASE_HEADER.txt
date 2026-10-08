@@ -1,0 +1,432 @@
+CLASS lhc_ZCDS_PURCHASE_HEADER DEFINITION
+  INHERITING FROM cl_abap_behavior_handler.
+
+  PRIVATE SECTION.
+
+    METHODS get_instance_authorizations
+      FOR INSTANCE AUTHORIZATION
+      keys REQUEST requested_authorizations
+      FOR Header
+      RESULT result.
+
+    METHODS get_global_authorizations
+      FOR GLOBAL AUTHORIZATION
+      REQUEST requested_authorizations
+      FOR Header
+      RESULT result.
+
+    METHODS earlynumbering_create
+      FOR NUMBERING
+      IMPORTING entities FOR CREATE Header.
+
+    METHODS earlynumbering_cba_Items
+      FOR NUMBERING
+      IMPORTING entities FOR CREATE Header\_Items.
+
+    METHODS submitpo
+      FOR MODIFY
+      keys FOR ACTION Header~submitpo.
+
+    METHODS approvepo
+      FOR MODIFY
+      keys FOR ACTION Header~approvepo.
+
+    METHODS rejectpo
+      FOR MODIFY
+      keys FOR ACTION Header~rejectpo.
+
+    METHODS setInitialStatus
+      FOR DETERMINE ON MODIFY
+      keys FOR Header~setInitialStatus.
+
+ENDCLASS.
+
+
+CLASS lhc_ZCDS_PURCHASE_HEADER IMPLEMENTATION.
+
+  METHOD get_instance_authorizations.
+  ENDMETHOD.
+
+
+  METHOD get_global_authorizations.
+  ENDMETHOD.
+
+
+  METHOD earlynumbering_create.
+
+    DATA lv_number TYPE i VALUE 1.
+
+    "Get highest number from active table
+    SELECT MAX( po_id )
+      FROM zpurchase_hdr
+      INTO @DATA(lv_max_active).
+
+    IF lv_max_active IS NOT INITIAL.
+
+      DATA(lv_active_num_text) = lv_max_active+2(8).
+
+      lv_number = CONV i( lv_active_num_text ) + 1.
+
+    ENDIF.
+
+
+    "Get highest number from draft table
+    SELECT MAX( po_id )
+      FROM zpurchase_hdr_d
+      INTO @DATA(lv_max_draft).
+
+    IF lv_max_draft IS NOT INITIAL.
+
+      DATA(lv_draft_num_text) = lv_max_draft+2(8).
+
+      DATA(lv_draft_number) =
+        CONV i( lv_draft_num_text ) + 1.
+
+      IF lv_draft_number > lv_number.
+        lv_number = lv_draft_number.
+      ENDIF.
+
+    ENDIF.
+
+
+    "Assign unique PO number to every create request
+    LOOP AT entities ASSIGNING FIELD-SYMBOL(<entity>).
+
+      APPEND VALUE #(
+        %cid      = <entity>-%cid
+        %is_draft = <entity>-%is_draft
+        po_id     = |PO{ lv_number WIDTH = 8 ALIGN = RIGHT PAD = '0' }|
+      ) TO mapped-header.
+
+      lv_number += 1.
+
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+ METHOD earlynumbering_cba_Items.
+
+  LOOP AT entities ASSIGNING FIELD-SYMBOL(<header>).
+
+    DATA lv_max_item TYPE i VALUE 0.
+
+    IF <header>-%is_draft = if_abap_behv=>mk-on.
+
+      SELECT MAX( item_no )
+        FROM zpurchase_itm_d
+        WHERE po_id = @<header>-po_id
+        INTO @DATA(lv_existing_draft_item).
+
+      IF lv_existing_draft_item IS NOT INITIAL.
+        lv_max_item = CONV i( lv_existing_draft_item ).
+      ENDIF.
+
+    ELSE.
+
+      SELECT MAX( item_no )
+        FROM zpurchase_itm
+        WHERE po_id = @<header>-po_id
+        INTO @DATA(lv_existing_active_item).
+
+      IF lv_existing_active_item IS NOT INITIAL.
+        lv_max_item = CONV i( lv_existing_active_item ).
+      ENDIF.
+
+    ENDIF.
+
+
+    LOOP AT <header>-%target
+      ASSIGNING FIELD-SYMBOL(<item>).
+
+      lv_max_item += 1.
+
+      APPEND VALUE #(
+        %cid      = <item>-%cid
+        %is_draft = <item>-%is_draft
+        po_id     = <header>-po_id
+        item_no   = CONV numc4( lv_max_item )
+      ) TO mapped-item.
+
+    ENDLOOP.
+
+  ENDLOOP.
+
+ENDMETHOD.
+  METHOD setInitialStatus.
+
+    MODIFY ENTITIES OF zcds_purchase_header IN LOCAL MODE
+      ENTITY Header
+      UPDATE FIELDS ( status )
+      WITH VALUE #(
+        FOR key IN keys
+          ( %tky   = key-%tky
+            status = 'OPEN' )
+      ).
+
+  ENDMETHOD.
+
+
+  METHOD submitpo.
+
+    MODIFY ENTITIES OF zcds_purchase_header IN LOCAL MODE
+      ENTITY Header
+      UPDATE FIELDS ( status )
+      WITH VALUE #(
+        FOR key IN keys
+          ( %tky   = key-%tky
+            status = 'SUBMITTED' )
+      ).
+
+  ENDMETHOD.
+
+
+  METHOD approvepo.
+
+    READ ENTITIES OF zcds_purchase_header IN LOCAL MODE
+      ENTITY Header
+      FIELDS ( status )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_header).
+
+    LOOP AT lt_header INTO DATA(ls_header).
+
+      IF ls_header-status <> 'SUBMITTED'.
+
+        APPEND VALUE #(
+          %tky = ls_header-%tky
+        ) TO failed-header.
+
+        APPEND VALUE #(
+          %tky = ls_header-%tky
+          %msg = new_message_with_text(
+            severity = if_abap_behv_message=>severity-error
+            text = 'Only submitted purchase orders can be approved'
+          )
+        ) TO reported-header.
+
+      ELSE.
+
+        MODIFY ENTITIES OF zcds_purchase_header IN LOCAL MODE
+          ENTITY Header
+          UPDATE FIELDS ( status )
+          WITH VALUE #(
+            ( %tky   = ls_header-%tky
+              status = 'APPROVED' )
+          ).
+
+
+        READ ENTITIES OF zcds_purchase_header IN LOCAL MODE
+          ENTITY Header
+          BY \_Items
+          FIELDS ( material quantity )
+          WITH VALUE #(
+            ( %tky = ls_header-%tky )
+          )
+          RESULT DATA(lt_items).
+
+
+        LOOP AT lt_items INTO DATA(ls_item).
+
+          READ ENTITIES OF zcds_inventory
+            ENTITY zcds_inventory
+            FIELDS ( material quantity )
+            WITH VALUE #(
+              ( material = ls_item-material )
+            )
+            RESULT DATA(lt_inventory).
+
+
+          LOOP AT lt_inventory INTO DATA(ls_inventory).
+
+            MODIFY ENTITIES OF zcds_inventory
+              ENTITY zcds_inventory
+              UPDATE FIELDS ( quantity )
+              WITH VALUE #(
+                ( %tky     = ls_inventory-%tky
+                  quantity = ls_inventory-quantity
+                           + ls_item-quantity )
+              ).
+
+          ENDLOOP.
+
+        ENDLOOP.
+
+      ENDIF.
+
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD rejectpo.
+
+    READ ENTITIES OF zcds_purchase_header IN LOCAL MODE
+      ENTITY Header
+      FIELDS ( status )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_header).
+
+    LOOP AT lt_header INTO DATA(ls_header).
+
+      IF ls_header-status <> 'SUBMITTED'.
+
+        APPEND VALUE #(
+          %tky = ls_header-%tky
+        ) TO failed-header.
+
+        APPEND VALUE #(
+          %tky = ls_header-%tky
+          %msg = new_message_with_text(
+            severity = if_abap_behv_message=>severity-error
+            text = 'Only submitted purchase orders can be rejected'
+          )
+        ) TO reported-header.
+
+      ELSE.
+
+        MODIFY ENTITIES OF zcds_purchase_header IN LOCAL MODE
+          ENTITY Header
+          UPDATE FIELDS ( status )
+          WITH VALUE #(
+            ( %tky   = ls_header-%tky
+              status = 'REJECTED' )
+          ).
+
+      ENDIF.
+
+    ENDLOOP.
+
+  ENDMETHOD.
+
+ENDCLASS.
+
+
+
+CLASS lhc_ZCDS_PURCHASE_ITEM DEFINITION
+  INHERITING FROM cl_abap_behavior_handler.
+
+  PRIVATE SECTION.
+
+    METHODS validateQuantity
+      FOR VALIDATE ON SAVE
+      keys FOR Item~validateQuantity.
+
+    METHODS calculateAmounts
+      FOR DETERMINE ON MODIFY
+      keys FOR Item~calculateAmounts.
+
+ENDCLASS.
+
+
+
+CLASS lhc_ZCDS_PURCHASE_ITEM IMPLEMENTATION.
+
+  METHOD validateQuantity.
+
+    READ ENTITIES OF zcds_purchase_header IN LOCAL MODE
+      ENTITY Item
+      FIELDS ( quantity )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_items).
+
+    LOOP AT lt_items INTO DATA(ls_item).
+
+      IF ls_item-quantity < 1.
+
+        APPEND VALUE #(
+          %tky = ls_item-%tky
+        ) TO failed-item.
+
+        APPEND VALUE #(
+          %tky = ls_item-%tky
+          %msg = new_message_with_text(
+            severity = if_abap_behv_message=>severity-error
+            text = 'Quantity must be greater than zero'
+          )
+        ) TO reported-item.
+
+      ENDIF.
+
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD calculateAmounts.
+
+    READ ENTITIES OF zcds_purchase_header IN LOCAL MODE
+      ENTITY Item
+      FIELDS ( quantity unit_price )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_items).
+
+
+    LOOP AT lt_items INTO DATA(ls_item).
+
+      DATA lv_amount TYPE p LENGTH 15 DECIMALS 2.
+
+      lv_amount =
+        ls_item-quantity * ls_item-unit_price.
+
+
+      MODIFY ENTITIES OF zcds_purchase_header IN LOCAL MODE
+        ENTITY Item
+        UPDATE FIELDS ( item_amount )
+        WITH VALUE #(
+          ( %tky        = ls_item-%tky
+            item_amount = lv_amount )
+        ).
+
+    ENDLOOP.
+
+
+    READ ENTITIES OF zcds_purchase_header IN LOCAL MODE
+      ENTITY Item
+      BY \_Header
+      FIELDS ( po_id )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_headers).
+
+
+    SORT lt_headers BY %tky.
+
+
+    LOOP AT lt_headers INTO DATA(ls_header).
+
+      READ ENTITIES OF zcds_purchase_header IN LOCAL MODE
+        ENTITY Header
+        BY \_Items
+        FIELDS ( item_amount )
+        WITH VALUE #(
+          ( %tky = ls_header-%tky )
+        )
+        RESULT DATA(lt_all_items).
+
+
+      DATA lv_total TYPE p LENGTH 15 DECIMALS 2.
+
+      CLEAR lv_total.
+
+
+      LOOP AT lt_all_items INTO DATA(ls_all_item).
+
+        lv_total =
+          lv_total + ls_all_item-item_amount.
+
+      ENDLOOP.
+
+
+      MODIFY ENTITIES OF zcds_purchase_header IN LOCAL MODE
+        ENTITY Header
+        UPDATE FIELDS ( total_amount )
+        WITH VALUE #(
+          ( %tky         = ls_header-%tky
+            total_amount = lv_total )
+        ).
+
+    ENDLOOP.
+
+  ENDMETHOD.
+
+ENDCLASS.

@@ -1,0 +1,25 @@
+@AbapCatalog.viewEnhancementCategory: [#NONE]
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'purchase order iteem cds view'
+@Metadata.ignorePropagatedAnnotations: true
+@Metadata.allowExtensions: true
+define view entity ZCDS_PURCHASE_ITEM as select from zpurchase_itm
+
+  association to parent ZCDS_PURCHASE_HEADER as _Header
+    on $projection.po_id = _Header.po_id
+    
+association [0..1] to ZCDS_INVENTORY as _Inventory
+  on $projection.material = _Inventory.material
+  
+{
+     key po_id,
+  key item_no,
+      material,
+      quantity,
+      unit_price,
+      currency,
+       _Header,
+     _Inventory,
+       last_changed_at,
+     item_amount
+}

@@ -1,0 +1,18 @@
+@EndUserText.label : 'Purchase Order Item'
+@AbapCatalog.enhancement.category : #NOT_EXTENSIBLE
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table zpurchase_itm {
+
+  key client      : abap.clnt not null;
+  key po_id       : abap.char(10) not null;
+  key item_no     : abap.numc(4) not null;
+  material        : abap.char(40);
+  quantity        : abap.int4;
+  unit_price      : abap.dec(15,2);
+  currency        : abap.cuky;
+  item_amount     : abap.dec(15,2);
+  last_changed_at : abp_lastchange_tstmpl;
+
+}

@@ -1,0 +1,17 @@
+@EndUserText.label : 'Purchase Order Header'
+@AbapCatalog.enhancement.category : #NOT_EXTENSIBLE
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table zpurchase_hdr {
+
+  key client      : abap.clnt not null;
+  key po_id       : abap.char(10) not null;
+  supplier        : abap.char(40);
+  po_date         : abap.dats;
+  status          : abap.char(10);
+  total_amount    : abap.dec(15,2);
+  currency        : abap.cuky;
+  last_changed_at : abp_lastchange_tstmpl;
+
+}

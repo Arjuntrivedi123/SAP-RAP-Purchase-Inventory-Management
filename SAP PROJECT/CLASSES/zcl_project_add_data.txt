@@ -1,0 +1,115 @@
+CLASS zcl_project_add_data DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+
+    INTERFACES if_oo_adt_classrun .
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+
+
+CLASS zcl_project_add_data IMPLEMENTATION.
+
+
+  METHOD if_oo_adt_classrun~main.
+
+DATA: lt_purchase_hdr TYPE TABLE OF zpurchase_hdr.
+
+lt_purchase_hdr = VALUE #(
+  ( po_id = 'PO10000001'
+    supplier = 'ABC Electronics'
+    po_date = '20260901'
+    status = 'OPEN'
+    total_amount = '550000.00'
+    currency = 'INR' )
+
+  ( po_id = 'PO10000002'
+    supplier = 'Global Components'
+    po_date = '20260903'
+    status = 'COMPLETED'
+    total_amount = '85000.00'
+    currency = 'INR' )
+
+  ( po_id = 'PO10000003'
+    supplier = 'Tech Supplies'
+    po_date = '20260905'
+    status = 'OPEN'
+    total_amount = '90000.00'
+    currency = 'INR' )
+).
+
+INSERT zpurchase_hdr FROM TABLE @lt_purchase_hdr.
+
+DATA: lt_purchase_itm TYPE TABLE OF zpurchase_itm.
+
+lt_purchase_itm = VALUE #(
+  ( po_id = 'PO10000001'
+    item_no = '0001'
+    material = 'Laptop'
+    quantity = 10
+    unit_price = '50000.00'
+    currency = 'INR' )
+
+  ( po_id = 'PO10000001'
+    item_no = '0002'
+    material = 'Keyboard'
+    quantity = 20
+    unit_price = '2500.00'
+    currency = 'INR' )
+
+  ( po_id = 'PO10000002'
+    item_no = '0001'
+    material = 'Monitor'
+    quantity = 10
+    unit_price = '8500.00'
+    currency = 'INR' )
+
+  ( po_id = 'PO10000003'
+    item_no = '0001'
+    material = 'Printer'
+    quantity = 5
+    unit_price = '12000.00'
+    currency = 'INR' )
+
+  ( po_id = 'PO10000003'
+    item_no = '0002'
+    material = 'Mouse'
+    quantity = 20
+    unit_price = '1500.00'
+    currency = 'INR' )
+).
+
+INSERT zpurchase_itm FROM TABLE @lt_purchase_itm.
+
+DATA: lt_inventory TYPE TABLE OF zinventory.
+
+lt_inventory = VALUE #(
+  ( material = 'Laptop'
+    quantity = 25
+    unit = 'PC' )
+
+  ( material = 'Keyboard'
+    quantity = 60
+    unit = 'PC' )
+
+  ( material = 'Monitor'
+    quantity = 30
+    unit = 'PC' )
+
+  ( material = 'Printer'
+    quantity = 12
+    unit = 'PC' )
+
+  ( material = 'Mouse'
+    quantity = 80
+    unit = 'PC' )
+).
+
+INSERT zinventory FROM TABLE @lt_inventory.
+
+  ENDMETHOD.
+ENDCLASS.

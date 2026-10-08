@@ -1,0 +1,6 @@
+@EndUserText.label: 'Purchase Order Inventory Service'
+define service ZUI_PO_INVENTORY {
+  expose ZUI_PURCHASE_ORDER      as PurchaseOrder;
+  expose ZUI_PURCHASE_ORDER_ITEM as PurchaseOrderItem;
+  expose ZCDS_INVENTORY          as Inventory;
+}

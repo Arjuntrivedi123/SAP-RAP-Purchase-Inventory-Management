@@ -1,0 +1,88 @@
+managed implementation in class zbp_cds_purchase_header unique;
+
+strict ( 2 );
+
+with draft;
+
+define behavior for ZCDS_PURCHASE_HEADER alias Header
+
+persistent table zpurchase_hdr
+draft table zpurchase_hdr_d
+
+lock master
+total etag last_changed_at
+
+authorization master ( instance )
+
+early numbering
+{
+  create ( authorization : global );
+  update;
+  delete;
+
+  draft action Edit;
+  draft action Activate optimized;
+  draft action Discard;
+  draft action Resume;
+
+  draft determine action Prepare
+  {
+    validation Item~validateQuantity;
+  }
+
+  field ( readonly ) po_id, last_changed_at;
+
+  association _Items
+  {
+    create;
+    with draft;
+  }
+
+  action submitPO;
+  action approvePO;
+  action rejectPO;
+
+  side effects
+  {
+    action submitPO affects field status;
+    action approvePO affects field status;
+    action rejectPO affects field status;
+  }
+
+  determination setInitialStatus on modify
+  {
+    create;
+  }
+}
+
+
+define behavior for ZCDS_PURCHASE_ITEM alias Item
+
+persistent table zpurchase_itm
+draft table zpurchase_itm_d
+
+lock dependent by _Header
+authorization dependent by _Header
+
+early numbering
+{
+  update;
+  delete;
+
+  field ( readonly ) po_id, item_no;
+
+  association _Header
+  {
+    with draft;
+  }
+
+  validation validateQuantity on save
+  {
+    field quantity;
+  }
+
+  determination calculateAmounts on modify
+  {
+    field quantity, unit_price;
+  }
+}

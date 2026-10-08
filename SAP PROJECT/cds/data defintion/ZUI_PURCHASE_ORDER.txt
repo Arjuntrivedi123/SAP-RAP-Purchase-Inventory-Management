@@ -1,0 +1,18 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Purchase Order UI Projection'
+@ObjectModel.semanticKey: [ 'po_id' ]
+
+define root view entity ZUI_PURCHASE_ORDER
+  provider contract transactional_query
+  as projection on ZCDS_PURCHASE_HEADER
+{
+  key po_id,
+  supplier,
+  po_date,
+  status,
+  total_amount,
+  currency,
+  last_changed_at,
+
+  _Items : redirected to composition child ZUI_PURCHASE_ORDER_ITEM
+}

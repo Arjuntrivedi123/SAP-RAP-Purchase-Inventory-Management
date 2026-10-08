@@ -1,0 +1,74 @@
+@Metadata.layer: #CUSTOMER
+
+annotate view ZCDS_PURCHASE_ITEM with
+{
+  @UI.facet: [
+    {
+      id: 'ItemDetails',
+      label: 'Purchase Order Item',
+      type: #IDENTIFICATION_REFERENCE,
+      targetQualifier: 'ItemDetails',
+      position: 10
+    }
+  ]
+
+  @UI.lineItem: [{ position: 10 }]
+  @UI.identification: [
+    {
+      position: 10,
+      qualifier: 'ItemDetails',
+      label: 'Item No.'
+    }
+  ]
+  item_no;
+
+  @UI.lineItem: [{ position: 20 }]
+  @UI.identification: [
+    {
+      position: 20,
+      qualifier: 'ItemDetails',
+      label: 'Material'
+    }
+  ]
+  material;
+
+  @UI.lineItem: [{ position: 30 }]
+  @UI.identification: [
+    {
+      position: 30,
+      qualifier: 'ItemDetails',
+      label: 'Quantity'
+    }
+  ]
+  quantity;
+
+  @UI.lineItem: [{ position: 40 }]
+  @UI.identification: [
+    {
+      position: 40,
+      qualifier: 'ItemDetails',
+      label: 'Unit Price'
+    }
+  ]
+  unit_price;
+
+  @UI.lineItem: [{ position: 50 }]
+  @UI.identification: [
+    {
+      position: 50,
+      qualifier: 'ItemDetails',
+      label: 'Item Amount'
+    }
+  ]
+  item_amount;
+
+  @UI.lineItem: [{ position: 60 }]
+  @UI.identification: [
+    {
+      position: 60,
+      qualifier: 'ItemDetails',
+      label: 'Currency'
+    }
+  ]
+  currency;
+}

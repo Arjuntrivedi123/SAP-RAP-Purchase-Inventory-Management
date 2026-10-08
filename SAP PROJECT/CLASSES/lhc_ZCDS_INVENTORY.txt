@@ -1,0 +1,23 @@
+CLASS lhc_ZCDS_INVENTORY DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS get_instance_authorizations FOR INSTANCE AUTHORIZATION
+      keys REQUEST requested_authorizations FOR zcds_inventory RESULT result.
+
+ENDCLASS.
+
+CLASS lhc_ZCDS_INVENTORY IMPLEMENTATION.
+
+  METHOD get_instance_authorizations.
+
+  LOOP AT keys INTO DATA(ls_key).
+
+    APPEND VALUE #(
+      %tky = ls_key-%tky
+      %update = if_abap_behv=>auth-allowed
+    ) TO result.
+
+  ENDLOOP.
+  ENDMETHOD.
+
+ENDCLASS.

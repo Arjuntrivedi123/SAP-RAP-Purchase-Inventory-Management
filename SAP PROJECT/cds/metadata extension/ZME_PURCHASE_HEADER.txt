@@ -1,0 +1,116 @@
+@Metadata.layer: #CUSTOMER
+
+annotate entity ZCDS_PURCHASE_HEADER
+    with
+{
+  @UI.facet: [
+    {
+      id: 'GeneralInfo',
+      label: 'Purchase Order Details',
+      type: #IDENTIFICATION_REFERENCE,
+      targetQualifier: 'GeneralInfo',
+      position: 10
+    },
+    {
+      id: 'Items',
+      label: 'Purchase Order Items',
+      type: #LINEITEM_REFERENCE,
+      targetElement: '_Items',
+      position: 20
+    }
+  ]
+
+  @UI.lineItem: [
+    { position: 10 },
+    {
+      type: #FOR_ACTION,
+      dataAction: 'submitPO',
+      label: 'Submit',
+      position: 70
+    },
+    {
+      type: #FOR_ACTION,
+      dataAction: 'approvePO',
+      label: 'Approve',
+      position: 80
+    },
+    {
+      type: #FOR_ACTION,
+      dataAction: 'rejectPO',
+      label: 'Reject',
+      position: 90
+    }
+  ]
+
+  @UI.selectionField: [{ position: 10 }]
+
+  @UI.identification: [
+    {
+      position: 10,
+      qualifier: 'GeneralInfo',
+      label: 'PO ID'
+    }
+  ]
+  po_id;
+
+  @UI.lineItem: [{ position: 20 }]
+  @UI.selectionField: [{ position: 20 }]
+  @UI.identification: [
+    {
+      position: 20,
+      qualifier: 'GeneralInfo',
+      label: 'Supplier'
+    }
+  ]
+  supplier;
+
+  @UI.lineItem: [{ position: 30 }]
+  @UI.identification: [
+    {
+      position: 30,
+      qualifier: 'GeneralInfo',
+      label: 'PO Date'
+    }
+  ]
+  po_date;
+
+  @UI.lineItem: [{ position: 40 }]
+  @UI.selectionField: [{ position: 30 }]
+  @UI.identification: [
+    {
+      position: 40,
+      qualifier: 'GeneralInfo',
+      label: 'Status'
+    }
+  ]
+  status;
+
+  @UI.lineItem: [{ position: 50 }]
+  @UI.identification: [
+    {
+      position: 50,
+      qualifier: 'GeneralInfo',
+      label: 'Total Amount'
+    }
+  ]
+  total_amount;
+
+  @UI.lineItem: [{ position: 60 }]
+  @UI.identification: [
+    {
+      position: 60,
+      qualifier: 'GeneralInfo',
+      label: 'Currency'
+    }
+  ]
+  currency;
+
+  @UI.identification: [
+    {
+      position: 70,
+      qualifier: 'GeneralInfo',
+      label: 'Last Changed At'
+    }
+  ]
+  last_changed_at;
+}

@@ -1,0 +1,13 @@
+managed implementation in class zbp_cds_inventory unique;
+
+strict ( 2 );
+
+define behavior for ZCDS_INVENTORY
+persistent table zinventory
+lock master
+authorization master ( instance )
+{
+  update;
+
+  field ( readonly ) material;
+}

@@ -1,0 +1,18 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Purchase Order Item UI Projection'
+
+define view entity ZUI_PURCHASE_ORDER_ITEM
+  as projection on ZCDS_PURCHASE_ITEM
+{
+  key po_id,
+  key item_no,
+  material,
+  quantity,
+  unit_price,
+  currency,
+  item_amount,
+  last_changed_at,
+
+  _Header   : redirected to parent ZUI_PURCHASE_ORDER,
+  _Inventory
+}

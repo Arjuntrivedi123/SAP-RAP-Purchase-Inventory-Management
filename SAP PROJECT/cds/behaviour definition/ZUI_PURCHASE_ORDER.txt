@@ -1,0 +1,31 @@
+projection;
+strict ( 2 );
+use draft;
+use side effects;
+
+define behavior for ZUI_PURCHASE_ORDER alias PurchaseOrder
+{
+  use create;
+  use update;
+  use delete;
+
+  use action Edit;
+  use action Activate;
+  use action Discard;
+  use action Resume;
+  use action Prepare;
+
+  use action submitPO;
+  use action approvePO;
+  use action rejectPO;
+
+  use association _Items { create; }
+}
+
+define behavior for ZUI_PURCHASE_ORDER_ITEM alias PurchaseOrderItem
+{
+  use update;
+  use delete;
+
+  use association _Header;
+}

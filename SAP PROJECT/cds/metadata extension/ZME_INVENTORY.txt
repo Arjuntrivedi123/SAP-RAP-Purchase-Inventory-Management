@@ -1,0 +1,14 @@
+@Metadata.layer: #CUSTOMER
+
+annotate entity ZCDS_INVENTORY
+    with
+{
+  @UI.lineItem: [{ position: 10 }]
+  material;
+
+  @UI.lineItem: [{ position: 20 }]
+  quantity;
+
+  @UI.lineItem: [{ position: 30 }]
+  unit;
+}

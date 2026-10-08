@@ -1,0 +1,11 @@
+@AbapCatalog.viewEnhancementCategory: [#NONE]
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'inventory stock cds view'
+@Metadata.ignorePropagatedAnnotations: true
+@Metadata.allowExtensions: true
+define root view entity ZCDS_INVENTORY as select from zinventory
+{
+     key material,
+      quantity,
+      unit
+}

@@ -1,0 +1,22 @@
+@AbapCatalog.viewEnhancementCategory: [#NONE]
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Purchase Order Header CDS View'
+@Metadata.ignorePropagatedAnnotations: true
+@Metadata.allowExtensions: true
+define root view entity ZCDS_PURCHASE_HEADER
+  as select from zpurchase_hdr
+
+  composition [0..*] of ZCDS_PURCHASE_ITEM as _Items
+
+{
+     key po_id,
+      supplier,
+      po_date,
+      status,
+      total_amount,
+      currency ,
+     
+      @Semantics.systemDateTime.lastChangedAt: true
+      last_changed_at,
+      _Items
+}
