@@ -1,338 +1,372 @@
-SAP RAP Purchase & Inventory Management
+# SAP RAP Purchase & Inventory Management
 
-An end-to-end SAP ABAP Cloud application developed using the RESTful Application Programming Model (RAP) for Purchase Order and Inventory Management.
+> An end-to-end **SAP ABAP Cloud** application for Purchase Order and Inventory Management, developed using **RAP, CDS, OData V4 and Fiori Elements**.
 
-The project demonstrates modern SAP cloud application development using ABAP Cloud, Core Data Services (CDS), RAP Business Objects, OData V4 and Fiori Elements.
+---
 
-Project Overview
+## Overview
 
-The application provides a structured solution for managing Purchase Orders, Purchase Order Items and Inventory data.
+This project demonstrates the development of a transactional business application using the **SAP RESTful Application Programming Model (RAP)**.
 
-The project implements transactional business logic using the RAP framework, including validations, determinations, actions and authorization handling.
+The application manages:
 
-The RAP Business Object is exposed through an OData V4 service and consumed using a Fiori Elements-based user interface.
+* Purchase Orders
+* Purchase Order Items
+* Inventory
 
-Business Scope
+It implements business logic through **RAP validations, determinations and actions**, exposes the application through **OData V4**, and provides a **Fiori Elements** user interface.
 
-The application consists of three main business entities:
+---
 
+## Key Features
+
+| Feature                   | Implementation          |
+| ------------------------- | ----------------------- |
+| Purchase Order Management | RAP Business Object     |
+| Purchase Item Management  | RAP Composition         |
+| Inventory Management      | CDS Association         |
+| CRUD Operations           | Managed RAP             |
+| Quantity Validation       | RAP Validation          |
+| Item Amount Calculation   | RAP Determination       |
+| Purchase Order Processing | RAP Action              |
+| Authorization             | RAP Authorization       |
+| Service Exposure          | OData V4                |
+| User Interface            | Fiori Elements          |
+| UI Configuration          | CDS Metadata Extensions |
+| Search & Filtering        | Fiori Elements          |
+
+---
+
+## Technology Stack
+
+* **SAP BTP ABAP Environment**
+* **ABAP Cloud**
+* **ABAP**
+* **Core Data Services (CDS)**
+* **RESTful Application Programming Model (RAP)**
+* **OData V4**
+* **SAP Fiori Elements**
+* **Eclipse ADT**
+
+---
+
+## Application Architecture
+
+The project follows the standard layered architecture of an SAP RAP application.
+
+```text
+┌──────────────────────────────┐
+│       Fiori Elements         │
+│      List Report / Page      │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│          OData V4            │
+│       Service Binding        │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│      Service Definition      │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│       RAP Business Object    │
+│                              │
+│  Behavior Definition         │
+│  Behavior Implementation     │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│        CDS Data Model        │
+│                              │
+│ Header → Items → Inventory   │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│       ABAP Database Tables   │
+└──────────────────────────────┘
+```
+
+---
+
+## Data Model
+
+The application contains three main entities.
+
+### Purchase Order Header
+
+Root entity representing the Purchase Order.
+
+**Main fields:**
+
+* PO ID
+* Supplier
+* PO Date
+* Status
+* Total Amount
+* Currency
+
+### Purchase Order Item
+
+Child entity containing individual Purchase Order items.
+
+**Main fields:**
+
+* PO ID
+* Item Number
+* Material
+* Quantity
+* Unit Price
+* Currency
+* Item Amount
+
+### Inventory
+
+Entity containing material-level inventory information.
+
+**Main fields:**
+
+* Material
+* Quantity
+* Unit
+
+### Entity Relationship
+
+```text
 Purchase Order Header
+          │
+          │ Composition
+          ▼
 Purchase Order Item
-Inventory
+          │
+          │ Association
+          ▼
+       Inventory
+```
 
-The Purchase Order Header acts as the root entity and maintains its associated Purchase Order Items through a CDS composition.
+---
 
-Purchase Order Items are associated with Inventory based on the Material field.
+## CDS Data Model
 
-Key Features
-Purchase Order Header management
-Purchase Order Item management
-Inventory data management
-Header-Item composition
-Item-to-Inventory association
-Managed RAP Business Object
-Create, Read, Update and Delete operations
-Purchase Order Item quantity validation
-Automatic Item Amount calculation
-Purchase Order total calculation
-Purchase Order Submit action
-RAP validations
-RAP determinations
-RAP actions
-Authorization handling
-OData V4 service exposure
-Fiori Elements user interface
-CDS-based UI annotations
-Search and filtering
-List Report and Object Page
-Technology Stack
-Technology	Purpose
-SAP BTP ABAP Environment	Cloud development platform
-ABAP Cloud	Backend development
-ABAP	Business logic
-CDS	Data modeling
-RAP	Transactional application development
-OData V4	Service exposure
-Fiori Elements	User interface
-Eclipse ADT	Development environment
-Application Architecture
+The CDS layer defines the application's business data model and relationships.
 
-The application follows the standard layered architecture of an SAP RAP application.
+| CDS Entity             | Purpose                    |
+| ---------------------- | -------------------------- |
+| `ZCDS_PURCHASE_HEADER` | Purchase Order root entity |
+| `ZCDS_PURCHASE_ITEM`   | Purchase Order item entity |
+| `ZCDS_INVENTORY`       | Inventory entity           |
 
-Database Tables
-       |
-       v
-CDS Data Model
-       |
-       v
-RAP Business Object
-       |
-       +-- Behavior Definition
-       |
-       +-- Behavior Implementation
-       |
-       v
-Service Definition
-       |
-       v
-Service Binding
-       |
-       v
-OData V4
-       |
-       v
-Fiori Elements
-Architecture Layers
+The Purchase Order Header is defined as the **root entity**.
 
-Database Layer
+The Header-to-Item relationship uses **CDS composition**, while the Item-to-Inventory relationship uses a **CDS association**.
 
-Persistent data is stored in custom ABAP Cloud database tables:
+---
 
-ZPURCHASE_HDR
-ZPURCHASE_ITM
-ZINVENTORY
+## RAP Behavior
 
-Data Modeling Layer
+The application uses **Managed RAP** for transactional processing.
 
-CDS view entities define the business data model, relationships and reusable business data.
-
-Behavior Layer
-
-RAP Behavior Definitions and Behavior Implementations define transactional operations and business logic.
-
-This includes validations, determinations, actions and authorization handling.
-
-Service Layer
-
-The RAP Business Object is exposed through a Service Definition and Service Binding using OData V4.
-
-UI Layer
-
-Fiori Elements consumes the OData V4 service and provides the application user interface.
-
-Data Model
-Purchase Order Header
-
-The Purchase Order Header represents the root entity of the application.
-
-Main attributes include:
-
-PO ID
-Supplier
-PO Date
-Status
-Total Amount
-Currency
-Purchase Order Item
-
-The Purchase Order Item represents individual materials belonging to a Purchase Order.
-
-Main attributes include:
-
-PO ID
-Item Number
-Material
-Quantity
-Unit Price
-Currency
-Item Amount
-Inventory
-
-The Inventory entity maintains material-level stock information.
-
-Main attributes include:
-
-Material
-Quantity
-Unit
-CDS Data Model
-
-The application uses CDS view entities to define the business data model.
-
-ZCDS_PURCHASE_HEADER
-          |
-          | Composition
-          v
-ZCDS_PURCHASE_ITEM
-          |
-          | Association
-          v
-ZCDS_INVENTORY
-
-The Purchase Order Header is defined as the root entity.
-
-Purchase Order Items are modeled as dependent child entities using CDS composition.
-
-Purchase Order Items are associated with Inventory using the Material field.
-
-RAP Behavior
-
-The application uses a managed RAP Business Object for transactional processing.
-
-CRUD Operations
+### CRUD
 
 The Business Object supports:
 
-Create
-Read
-Update
-Delete
-Validation
+* Create
+* Read
+* Update
+* Delete
 
-A RAP validation checks the Purchase Order Item quantity during save processing.
+### Validation
 
-The validation prevents invalid quantities from being saved.
+A validation checks the Purchase Order Item quantity during save.
 
+```text
 Quantity <= 0
-       |
-       v
+       │
+       ▼
 Validation Error
-Determination
+```
 
-A RAP determination automatically calculates the Purchase Order Item Amount.
+This prevents invalid item quantities from being persisted.
 
+### Determination
+
+A RAP determination automatically calculates the Item Amount.
+
+```text
 Item Amount = Quantity × Unit Price
+```
 
 This demonstrates automatic business logic execution during RAP processing.
 
-Actions
+### Action
 
-A Submit action is implemented for the Purchase Order Business Object.
+A **Submit Purchase Order** action is implemented as an explicit business operation on the Purchase Order.
 
-The action provides an explicit business operation for processing the Purchase Order.
+---
 
-Business Process
+## Business Process
 
-The implemented application flow is:
-
+```text
 Create Purchase Order
-        |
-        v
+          │
+          ▼
 Add Purchase Order Items
-        |
-        v
+          │
+          ▼
 Validate Quantity
-        |
-        v
+          │
+          ▼
 Calculate Item Amount
-        |
-        v
+          │
+          ▼
 Calculate Purchase Order Total
-        |
-        v
+          │
+          ▼
 Submit Purchase Order
-OData V4 Service
+```
 
-The RAP Business Object is exposed through an OData V4 service.
+---
 
+## Service Exposure
+
+The RAP Business Object is exposed using **OData V4**.
+
+```text
 RAP Business Object
-        |
-        v
+        │
+        ▼
 Service Definition
-        |
-        v
+        │
+        ▼
 Service Binding
-        |
-        v
+        │
+        ▼
 OData V4
-        |
-        v
+        │
+        ▼
 Fiori Elements
+```
 
-The OData service provides the interface between the RAP backend and the Fiori Elements application.
+The service layer provides the interface between the RAP backend and the Fiori Elements application.
 
-Fiori Elements
+---
 
-The application uses Fiori Elements for the user interface.
+## Fiori Elements
 
-The UI provides:
+The application uses **Fiori Elements** to provide the user interface.
 
-List Report
-Object Page
-Search
-Filtering
-Purchase Order navigation
-Item table
-Business actions
-CDS-driven UI annotations
+Implemented UI capabilities include:
 
-The UI is generated using metadata provided by the RAP service and CDS annotations.
+* List Report
+* Object Page
+* Search
+* Filtering
+* Purchase Order navigation
+* Item table
+* Business actions
+* CDS-based UI annotations
 
-Project Structure
+The UI is generated using the metadata provided by the RAP service and CDS annotations.
+
+---
+
+## Project Structure
+
+```text
 SAP-RAP-Purchase-Inventory-Management
-|
-+-- Database Tables
-|   +-- ZPURCHASE_HDR
-|   +-- ZPURCHASE_ITM
-|   +-- ZINVENTORY
-|
-+-- CDS Data Model
-|   +-- ZCDS_PURCHASE_HEADER
-|   +-- ZCDS_PURCHASE_ITEM
-|   +-- ZCDS_INVENTORY
-|
-+-- RAP Behavior
-|   +-- Behavior Definition
-|   +-- Behavior Implementation
-|
-+-- Metadata Extensions
-|
-+-- Service Definition
-|
-+-- Service Binding
-|
-+-- Test Data
-Development Environment
+│
+├── Database Tables
+│   ├── ZPURCHASE_HDR
+│   ├── ZPURCHASE_ITM
+│   └── ZINVENTORY
+│
+├── CDS Data Model
+│   ├── ZCDS_PURCHASE_HEADER
+│   ├── ZCDS_PURCHASE_ITEM
+│   └── ZCDS_INVENTORY
+│
+├── RAP Behavior
+│   ├── Behavior Definition
+│   └── Behavior Implementation
+│
+├── Metadata Extensions
+│
+├── Service Definition
+│
+├── Service Binding
+│
+└── Test Data
+```
 
-The project was developed using:
+---
 
-SAP BTP ABAP Environment
-Eclipse
-ABAP Development Tools (ADT)
-RAP Concepts Demonstrated
+## Development Environment
 
-This project demonstrates practical implementation of:
+| Component        | Details        |
+| ---------------- | -------------- |
+| Platform         | SAP BTP        |
+| Runtime          | ABAP Cloud     |
+| IDE              | Eclipse ADT    |
+| Service Protocol | OData V4       |
+| UI Framework     | Fiori Elements |
 
-ABAP Cloud
-CDS View Entities
-CDS Associations
-CDS Composition
-RAP Business Objects
-Managed RAP
-Behavior Definitions
-Behavior Implementations
-RAP Validations
-RAP Determinations
-RAP Actions
-Authorization
-OData V4
-Service Definitions
-Service Bindings
-Fiori Elements
-Metadata Extensions
-Testing
+---
+
+## Concepts Demonstrated
+
+This project provides hands-on implementation of:
+
+**ABAP Cloud**
+Cloud-ready ABAP development using the restricted ABAP language and released APIs.
+
+**CDS**
+Data modeling, associations, compositions and UI annotations.
+
+**RAP**
+Business Objects, managed behavior, validations, determinations, actions and authorization.
+
+**OData V4**
+Service exposure of the RAP Business Object.
+
+**Fiori Elements**
+Metadata-driven application UI using List Report and Object Page.
+
+---
+
+## Testing
 
 The application was tested using the SAP ABAP Cloud development environment and Fiori Elements preview.
 
-Testing includes:
+Testing covers:
 
-Purchase Order creation
-Purchase Order Item creation
-Quantity validation
-Automatic Item Amount calculation
-Purchase Order total calculation
-Submit action
-Inventory data access
-Fiori Elements navigation
-RAP transactional behavior
-Future Enhancements
+* Purchase Order creation
+* Purchase Order Item creation
+* Quantity validation
+* Item Amount calculation
+* Purchase Order total calculation
+* Submit action
+* Inventory data access
+* Fiori Elements navigation
+* RAP transactional behavior
 
-Potential future enhancements include:
+---
 
-Advanced Purchase Order approval workflow
-Role-based authorization
-Enhanced inventory stock update processing
-Supplier master data
-Material master integration
-Additional reporting capabilities
-Extended Fiori Elements UI adaptations
+## Future Enhancements
+
+* Advanced Purchase Order approval workflow
+* Enhanced inventory stock update processing
+* Supplier master data
+* Material master integration
+* Additional reporting capabilities
+* Extended Fiori Elements UI adaptations
+
+---
+
+## Project Purpose
+
+This project was developed to demonstrate practical experience with **SAP ABAP Cloud and RAP application development**, covering the complete backend-to-UI flow from data modeling to transactional processing and Fiori Elements consumption.
